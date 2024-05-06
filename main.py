@@ -1,3 +1,10 @@
+# create a python env with python 3.10 called attendance: 'python -m venv attendance'
+# activate python env: 'attendance/Scripts/activate.bat'
+# install requirements: 'pip install -r requirements.txt'
+# run program: 'python main.py'
+
+# After creating and running for the first time, activate the env again and run the program.
+
 import os
 from package.gmail import GmailClient
 from package.salesforce import AttendanceClient
