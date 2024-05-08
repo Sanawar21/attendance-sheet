@@ -1,7 +1,6 @@
 import os
 import json
 import pytz
-import datetime as dt
 from datetime import datetime
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -87,7 +86,7 @@ class GmailClient:
         except KeyError:
             raise Exception(
                 "Invalid credentials. Use GmailClient with force_renew=True")
-        current_time = datetime.now(dt.UTC).replace(tzinfo=pytz.UTC)
+        current_time = datetime.utcnow().replace(tzinfo=pytz.UTC)
         return current_time >= target_time_1 or current_time >= target_time_2
 
     def __gmail_setup(self):
