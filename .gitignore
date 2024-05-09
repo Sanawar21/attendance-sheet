@@ -164,6 +164,7 @@ chrome-win64/
 
 # credentials
 data/
+data.zip
 # credentials.json
 # secret*.json
 # courses.json

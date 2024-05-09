@@ -97,7 +97,7 @@ class GmailClient:
             exact_phrase="meeting data from",
             sender="meetings-noreply@google.com",
             # TODO: Change this
-            # unread=True,
+            unread=True,
             newer_than=(1, "Day"),
             # newer_than=(1, "Month"),
         )
@@ -149,5 +149,7 @@ class GmailClient:
                     dict_["Course"] = None
 
                 messages.append(dict_)
+
+            message.mark_as_read()
 
         return messages
