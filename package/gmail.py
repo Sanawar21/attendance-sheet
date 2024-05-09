@@ -140,8 +140,14 @@ class GmailClient:
                          for index, header in enumerate(headers)}
                 dict_["Date"] = date
                 dict_["Code"] = meeting_code
-                dict_["Course"] = [None] + [course["description"]
-                                            for course in courses if meeting_code in course["meet_link"]][-1]
+
+                for course in courses:
+                    if meeting_code in course["meet_link"]:
+                        dict_["Course"] = course["description"]
+                        break
+                else:
+                    dict_["Course"] = None
+
                 messages.append(dict_)
 
         return messages
