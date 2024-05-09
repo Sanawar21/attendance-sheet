@@ -26,10 +26,11 @@ class GmailClient:
 
     """
 
-    def __init__(self, client_secret_path="client_secret.json", credentials_path="credentials.json", force_renew=False) -> None:
+    def __init__(self, client_secret_path="data/secret.json", credentials_path="data/credentials.json", courses_path="data/courses.json", force_renew=False) -> None:
 
         self.credentials_path = credentials_path
         self.client_secret_path = client_secret_path
+        self.courses_path = courses_path
         self._sheets_creds = None
 
         # check if credentials.json is available
@@ -118,6 +119,7 @@ class GmailClient:
         for every attendee there will be a different message appended"""
 
         messages = []
+        courses = json.load(open(self.courses_path))
         for message in self._gmail.get_messages(query=self._query):
 
             link = message.html.split('href="')[1].split('"')[0]
@@ -138,14 +140,8 @@ class GmailClient:
                          for index, header in enumerate(headers)}
                 dict_["Date"] = date
                 dict_["Code"] = meeting_code
+                dict_["Course"] = [None] + [course["description"]
+                                            for course in courses if meeting_code in course["meet_link"]][-1]
                 messages.append(dict_)
 
         return messages
-
-
-if __name__ == "__main__":
-    gc = GmailClient(client_secret_path="secret.json", force_renew=False)
-    # gc = GmailClient(client_secret_path="package/secret.json", credentials_path="credentials.json",
-    #                  force_renew=True)
-    for attendee in gc.get_attendance():
-        print(attendee)

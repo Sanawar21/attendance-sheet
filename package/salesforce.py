@@ -25,11 +25,13 @@ class AttendanceClient(SFType):
             'Time joined': '10:30\u202fPM', 
             'Time exited': '11:25\u202fPM', 
             'Date': '2024-05-4T23:26:18+05:00Z', 
-            'Code': 'dnf-fkqv-twc'
+            'Code': 'dnf-fkqv-twc',
+            'Course': 'Course 1'
         }
         """
         data = {
-            "Course_Offering__c": None,  # TODO: Connect with google meet
+            # TODO: Connect with google meet
+            "Course_Offering__c": raw_data["Course"],
             "Duration__c": raw_data["Duration"],
             "Email__c": raw_data["Email"],
             "First_Name__c": raw_data["First name"],
