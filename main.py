@@ -1,5 +1,5 @@
 # create a python env with python 3.10 called attendance: 'python -m venv attendance'
-# activate python env: 'attendance/Scripts/activate.bat'
+# activate python env: 'attendance/Scripts/activate'
 # install requirements: 'pip install -r requirements.txt'
 # run program: 'python main.py'
 
