@@ -1,7 +1,7 @@
 from client import BaseClient
 
 
-class Sheets(BaseClient):
+class SheetsClient(BaseClient):
 
     def __init__(
             self,

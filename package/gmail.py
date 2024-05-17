@@ -7,6 +7,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from simplegmail import Gmail
 from simplegmail.query import construct_query
+from sheets import SheetsClient
 
 
 class GmailClient:
@@ -26,12 +27,12 @@ class GmailClient:
 
     """
 
-    def __init__(self, client_secret_path="data/secret.json", credentials_path="data/credentials.json", courses_path="data/courses.json", force_renew=False) -> None:
+    def __init__(self, sheets: SheetsClient, client_secret_path="data/secret.json", credentials_path="data/credentials.json", courses_path="data/courses.json", force_renew=False) -> None:
 
         self.credentials_path = credentials_path
         self.client_secret_path = client_secret_path
         self.courses_path = courses_path
-        self._sheets_creds = None
+        self.sheets = sheets
 
         # check if credentials.json is available
         try:
@@ -50,9 +51,6 @@ class GmailClient:
         # gmail setup
         self.__gmail_setup()
 
-        # spreadsheets setup
-        self.__sheets_setup()
-
     def __generate_credentials(self):
         credentials = dict(json.load(open(self.client_secret_path)))
         # generate gmail_token.json
@@ -60,15 +58,6 @@ class GmailClient:
         # merge gmail_token.json into the credentials dictionary then delete gmail_token.json
         credentials.update(json.load(open("gmail_token.json")))
         os.remove("gmail_token.json")
-        # generate sheets credentials
-        flow = InstalledAppFlow.from_client_secrets_file(
-            self.client_secret_path, [
-                "https://www.googleapis.com/auth/spreadsheets.readonly"]
-        )
-        self._sheets_creds = flow.run_local_server(port=0)
-        # merge into credentials with a separted key i.e "sheets"
-        credentials.update(
-            {"sheets": json.loads(self._sheets_creds.to_json())})
         # save credentials to disk
         with open(self.credentials_path, "w") as file:
             file.write(json.dumps(credentials))
@@ -80,15 +69,13 @@ class GmailClient:
 
     def __check_is_expired(self):
         try:
-            target_time_1 = datetime.fromisoformat(
+            target = datetime.fromisoformat(
                 self.credentials["token_expiry"].replace('Z', '+00:00')).replace(tzinfo=pytz.UTC)
-            target_time_2 = datetime.fromisoformat(
-                self.credentials["sheets"]["expiry"].replace('Z', '+00:00')).replace(tzinfo=pytz.UTC)
         except KeyError:
             raise Exception(
                 "Invalid credentials. Use GmailClient with force_renew=True")
         current_time = datetime.utcnow().replace(tzinfo=pytz.UTC)
-        return current_time >= target_time_1 or current_time >= target_time_2
+        return current_time >= target
 
     def __gmail_setup(self):
         self._gmail = Gmail(
@@ -102,14 +89,8 @@ class GmailClient:
             # newer_than=(1, "Month"),
         )
 
-    def __sheets_setup(self):
-        self._sheets_creds = Credentials.from_authorized_user_info(
-            self.credentials["sheets"], [
-                "https://www.googleapis.com/auth/spreadsheets.readonly"])
-        self._sheet = build(
-            "sheets", "v4", credentials=self._sheets_creds).spreadsheets()
-
-    def __format_date(self, date):
+    @staticmethod
+    def __format_date(date):
         date_obj = datetime.strptime(date, "%Y-%m-%d %H:%M:%S%z")
         return date_obj.strftime('%Y-%m-%d')
 
@@ -124,13 +105,8 @@ class GmailClient:
 
             link = message.html.split('href="')[1].split('"')[0]
             meeting_code = message.subject.split("'")[1]
-            id = link.split("/")[5]
-
-            data = list((
-                self._sheet.values()
-                .get(spreadsheetId=id, range="Attendees")
-                .execute()
-            ).get("values"))
+            spreadsheetId = link.split("/")[5]
+            data = self.sheets.get_spreadsheet(spreadsheetId)
 
             headers = data.pop(0)
             date = self.__format_date(message.date)

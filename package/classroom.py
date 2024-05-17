@@ -51,7 +51,7 @@ class Course:
         return course_dict
 
 
-class Classroom(BaseClient):
+class ClassroomClient(BaseClient):
 
     def __init__(
             self,
