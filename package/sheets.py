@@ -21,3 +21,14 @@ class Sheets(BaseClient):
             ],
             force_renew
         )
+
+    def get_spreadsheet(self, spreadsheetId, range_="Attendees"):
+        return list(
+            (self
+             .service
+             .spreadsheets()
+             .values()
+             .get(spreadsheetId=spreadsheetId, range=range_)
+             .execute()
+             )
+            .get("values"))
