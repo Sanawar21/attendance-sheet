@@ -31,7 +31,7 @@ class AttendanceClient(SFType):
         """
         data = {
             # TODO: Connect with google meet
-            "Course_Offering__c": raw_data["Course"],
+            "Course_Offering_ID__c": raw_data["Course"],
             "Duration__c": raw_data["Duration"],
             "Email__c": raw_data["Email"],
             "First_Name__c": raw_data["First name"],
