@@ -24,12 +24,11 @@ class GmailClient:
 
     """
 
-    def __init__(self, sheets: SheetsClient, client_secret_path="data/secret.json", credentials_path="data/credentials.json", courses_path="data/courses.json", force_renew=False) -> None:
+    def __init__(self, client_secret_path="data/secret.json", credentials_path="data/credentials.json", courses_path="data/courses.json", force_renew=False) -> None:
 
         self.credentials_path = credentials_path
         self.client_secret_path = client_secret_path
         self.courses_path = courses_path
-        self.sheets = sheets
 
         # check if credentials.json is available
         try:
@@ -47,6 +46,8 @@ class GmailClient:
 
         # gmail setup
         self.__gmail_setup()
+
+        self.sheets = SheetsClient(force_renew=force_renew)
 
     def __generate_credentials(self):
         credentials = dict(json.load(open(self.client_secret_path)))
@@ -91,13 +92,14 @@ class GmailClient:
         date_obj = datetime.strptime(date, "%Y-%m-%d %H:%M:%S%z")
         return date_obj.strftime('%Y-%m-%d')
 
-    def get_attendance(self):
+    def get_attendees(self):
         """every item will
         be a dictionary with key-value pairs (keys being the headers+Date+code)
         for every attendee there will be a different message appended"""
 
         messages = []
-        courses = json.load(open(self.courses_path))
+        courses = [value for value in list(json.load(
+            open(self.courses_path)).values())]
         for message in self._gmail.get_messages(query=self._query):
 
             link = message.html.split('href="')[1].split('"')[0]
@@ -117,12 +119,17 @@ class GmailClient:
                 for course in courses:
                     if meeting_code in course["meet_link"]:
                         dict_["Course"] = course["description"]
+                        dict_["Course ID"] = course["id"]
                         break
                 else:
                     dict_["Course"] = None
+                    dict_["Course ID"] = None
 
                 messages.append(dict_)
 
             message.mark_as_read()
 
         return messages
+
+    def get_absentees(self, attendees):
+        pass
