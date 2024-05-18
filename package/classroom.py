@@ -52,14 +52,17 @@ class Course:
 
 
 class ClassroomClient(BaseClient):
-
     def __init__(
             self,
+            classes_start_date="01/04/2024",
             client_secret_path="data/secret.json",
             credentials_path="data/credentials.json",
             courses_path="data/courses.json",
             force_renew=False
     ) -> None:
+        """
+        classes_start_date format: dd/mm/yyyy e.g "01/04/2024"
+        """
         super().__init__(
             "classroom",
             "v1",
@@ -72,13 +75,13 @@ class ClassroomClient(BaseClient):
             ],
             force_renew
         )
+        self.classes_start_date = classes_start_date
 
-    @staticmethod
-    def is_older_than_one_month(datetime_str):
-        input_datetime = datetime.fromisoformat(datetime_str[:-1])
-        current_datetime = datetime.utcnow()
-        one_month_ago = current_datetime - relativedelta(months=1)
-        return input_datetime < one_month_ago
+    def is_since_start_date(self, date: str) -> bool:
+        from_date = datetime.strptime(self.classes_start_date, "%d/%m/%Y")
+        iso_date = datetime.fromisoformat(date.replace('Z', '+00:00'))
+
+        return iso_date > from_date
 
     def get_courses(self):
         courses: list[Course] = []
@@ -88,7 +91,7 @@ class ClassroomClient(BaseClient):
             courses.append(Course(course))
 
         if courses:
-            while next_token and not self.is_older_than_one_month(courses[-1].time_created):
+            while next_token and not self.is_since_start_date(courses[-1].time_created):
                 results = self.service.courses().list(
                     pageSize=10, pageToken=next_token).execute()
                 next_token = results.get("nextPageToken")
