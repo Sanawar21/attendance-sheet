@@ -9,7 +9,7 @@ from sheets import SheetsClient
 
 class GmailClient:
     """
-    Initializes the gmail and spreadsheets API for getting the
+    Initializes the gmail API for getting the
     attendence sheets as soon as they are created. 
 
     This client is meant to be run a few times a day so new credentials are
