@@ -1,6 +1,5 @@
 import json
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
+from datetime import datetime, timezone
 from .client import BaseClient
 
 
@@ -58,6 +57,7 @@ class ClassroomClient(BaseClient):
             client_secret_path="data/secret.json",
             credentials_path="data/credentials.json",
             courses_path="data/courses.json",
+            students_path="data/students.json",
             force_renew=False
     ) -> None:
         """
@@ -76,10 +76,13 @@ class ClassroomClient(BaseClient):
             force_renew
         )
         self.classes_start_date = classes_start_date
+        self.students_path = students_path
 
     def is_since_start_date(self, date: str) -> bool:
-        from_date = datetime.strptime(self.classes_start_date, "%d/%m/%Y")
-        iso_date = datetime.fromisoformat(date.replace('Z', '+00:00'))
+        from_date = datetime.strptime(
+            self.classes_start_date, "%d/%m/%Y").replace(tzinfo=timezone.utc)
+        iso_date = datetime.fromisoformat(date.replace(
+            'Z', '+00:00')).replace(tzinfo=timezone.utc)
 
         return iso_date > from_date
 
@@ -91,7 +94,7 @@ class ClassroomClient(BaseClient):
             courses.append(Course(course))
 
         if courses:
-            while next_token and not self.is_since_start_date(courses[-1].time_created):
+            while next_token and self.is_since_start_date(courses[-1].time_created):
                 results = self.service.courses().list(
                     pageSize=10, pageToken=next_token).execute()
                 next_token = results.get("nextPageToken")
@@ -145,3 +148,71 @@ class ClassroomClient(BaseClient):
         for course in courses:
             students = self.get_students(course.id)
             self.save(students)
+
+    def get_absentees(self, attendees):
+        # attendee {
+        #     'Course ID': 'adsfadfadsf',
+        #     'First name': 'Sanawar',
+        #     'Last name': 'Saeed',
+        #     'Email': 'test@g.com',
+        #     'Duration': '56 min',
+        #     'Time joined': '10:30\u202fPM',
+        #     'Time exited': '11:25\u202fPM',
+        #     'Date': '2024-05-4T23:26:18+05:00Z',
+        #     'Code': 'dnf-fkqv-twc',
+        #     'Course': 'Course 1'
+        # }
+
+        # absentee {
+        #     'Course ID': 'adsfadfadsf',
+        #     'First name': 'Sanawar',
+        #     'Last name': 'Saeed',
+        #     'Course': 'Course 1'
+        # }
+
+        absentees = []
+        course_attendees = {}
+        for attendee in attendees:
+            course_id = attendee["Course ID"]
+
+            try:
+                course_attendees[course_id].append(attendee)
+            except KeyError:
+                course_attendees[course_id] = [attendee]
+
+        students = json.load(open(self.students_path))
+        courses = json.load(open(self.courses_path))
+
+        for course_id, attendees_info in course_attendees.items():
+            course_students = students[course_id]
+            course_attendee_students = [student for student in course_students if any(
+                [attendee_info["Last name"] in student for attendee_info in attendees_info])]
+            course_absentee_students = list(
+                set(course_students) - set(course_attendee_students))
+
+            for absentee_name in course_absentee_students:
+                reversed_name = absentee_name[::-1]
+                flag = False
+                last_name = ""
+
+                for chr in reversed_name:
+                    if flag and chr == " ":
+                        last_name = last_name[::-1]
+                        break
+                    if chr in "abcdefghijklmnopqrstuvwxyz":
+                        flag = True
+                    last_name += chr
+                else:
+                    last_name = absentee_name.split(" ")[0]
+
+                first_name = absentee_name[:absentee_name.index(
+                    last_name)].strip()
+
+                absentees.append({
+                    "First name": first_name,
+                    "Last name": last_name,
+                    "Course ID": course_id,
+                    "Course": courses[course_id]["description"],
+                })
+
+        return absentees
