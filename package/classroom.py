@@ -73,7 +73,7 @@ class ClassroomClient(BaseClient):
             force_renew
         )
 
-    @ staticmethod
+    @staticmethod
     def is_older_than_one_month(datetime_str):
         input_datetime = datetime.fromisoformat(datetime_str[:-1])
         current_datetime = datetime.utcnow()
