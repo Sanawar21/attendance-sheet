@@ -13,7 +13,7 @@ class AttendanceClient(SFType):
 
         super().__init__("hed__Attendance_Event__c", session_id, instance)
 
-    def upload(self, raw_data: dict):
+    def upload(self, raw_data: dict, is_absentee=False):
         """
         Uploads an attendance record containing data in the following
         format:
@@ -29,17 +29,30 @@ class AttendanceClient(SFType):
             'Course': 'Course 1'
         }
         """
-        data = {
-            # TODO: Connect with google meet
-            "Course_Offering_ID__c": raw_data["Course"],
-            "Duration__c": raw_data["Duration"],
-            "Email__c": raw_data["Email"],
-            "First_Name__c": raw_data["First name"],
-            "Last_Name__c": raw_data["Last name"],
-            "Time_Exited__c": raw_data["Time exited"],
-            "Time__c": raw_data["Time joined"],
-            "hed__Contact__c": None,
-            "hed__Date__c": raw_data["Date"],
-        }
+
+        if is_absentee:
+            data = {
+                "Course_Offering_ID__c": raw_data["Course"],
+                "First_Name__c": raw_data["First name"],
+                "Last_Name__c": raw_data["Last name"],
+                "Duration__c": None,
+                "Email__c": None,
+                "Time_Exited__c": None,
+                "Time__c": None,
+                "hed__Contact__c": None,
+                "hed__Date__c": None,
+            }
+        else:
+            data = {
+                "Course_Offering_ID__c": raw_data["Course"],
+                "Duration__c": raw_data["Duration"],
+                "Email__c": raw_data["Email"],
+                "First_Name__c": raw_data["First name"],
+                "Last_Name__c": raw_data["Last name"],
+                "Time_Exited__c": raw_data["Time exited"],
+                "Time__c": raw_data["Time joined"],
+                "hed__Contact__c": None,
+                "hed__Date__c": raw_data["Date"],
+            }
 
         return self.create(data)
