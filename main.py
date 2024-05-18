@@ -7,6 +7,7 @@
 
 from package.gmail import GmailClient
 from package.salesforce import AttendanceClient
+from package.classroom import ClassroomClient
 
 
 def get_env():
@@ -21,16 +22,29 @@ def get_env():
 
 
 if __name__ == "__main__":
+    print("Welcome To Attendence Sheet Bot")
+    force_renew = input(
+        "Forcefully renew the API tokens? (y/n) ").lower() == "y"
     env = get_env()
 
     username = env["SALESFORCE_USERNAME"]
     password = env["SALESFORCE_PASSWORD"]
     security_token = env["SALESFORCE_SECURITY_TOKEN"]
 
-    gc = GmailClient()
+    gc = GmailClient(force_renew=force_renew)
+    cc = ClassroomClient(force_renew=force_renew)
     ac = AttendanceClient(username, password, security_token)
+    attendees = gc.get_attendees()
+    absentees = cc.get_absentees(attendees)
 
-    for attendee in gc.get_attendance():
+    for attendee in attendees:
         ac.upload(attendee)
         print(
-            f"Uploaded attendance for {attendee['Code']} (Course: {attendee['Course']})")
+            f"Uploaded attendance for {attendee["Last name"]} (Course: {attendee['Course']})"
+        )
+
+    for absentee in absentees:
+        ac.upload(absentee)
+        print(
+            f"Uploaded absence for {absentee["Last name"]} (Course: {absentee['Course']})"
+        )
