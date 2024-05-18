@@ -100,7 +100,10 @@ class GmailClient:
         messages = []
         courses = [value for value in list(json.load(
             open(self.courses_path)).values())]
-        for message in self._gmail.get_messages(query=self._query):
+
+        gmail_messages = self._gmail.get_messages(query=self._query)
+
+        for message in gmail_messages:
 
             link = message.html.split('href="')[1].split('"')[0]
             meeting_code = message.subject.split("'")[1]
@@ -130,6 +133,3 @@ class GmailClient:
             message.mark_as_read()
 
         return messages
-
-    def get_absentees(self, attendees):
-        pass
