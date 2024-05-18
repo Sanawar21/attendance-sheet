@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from client import BaseClient
+from .client import BaseClient
 
 
 class Student:

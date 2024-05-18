@@ -4,7 +4,7 @@ import pytz
 from datetime import datetime
 from simplegmail import Gmail
 from simplegmail.query import construct_query
-from sheets import SheetsClient
+from .sheets import SheetsClient
 
 
 class GmailClient:
@@ -87,7 +87,7 @@ class GmailClient:
         )
 
     @staticmethod
-    def __format_date(date):
+    def format_date(date):
         date_obj = datetime.strptime(date, "%Y-%m-%d %H:%M:%S%z")
         return date_obj.strftime('%Y-%m-%d')
 
@@ -106,7 +106,7 @@ class GmailClient:
             data = self.sheets.get_spreadsheet(spreadsheetId)
 
             headers = data.pop(0)
-            date = self.__format_date(message.date)
+            date = self.format_date(message.date)
 
             for attendee in data:
                 dict_ = {header: attendee[index]
