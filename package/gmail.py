@@ -82,7 +82,7 @@ class GmailClient:
             exact_phrase="meeting data from",
             sender="meetings-noreply@google.com",
             # TODO: Change this
-            unread=True,
+            # unread=True,
             newer_than=(1, "Day"),
             # newer_than=(1, "Month"),
         )
@@ -130,6 +130,7 @@ class GmailClient:
 
                 messages.append(dict_)
 
+            print(f"Collected attendees for {meeting_code}")
             message.mark_as_read()
 
         return messages

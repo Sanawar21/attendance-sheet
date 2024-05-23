@@ -40,7 +40,7 @@ class AttendanceClient(SFType):
                 "Time_Exited__c": None,
                 "Time__c": None,
                 "hed__Contact__c": None,
-                "hed__Date__c": None,
+                "hed__Date__c": raw_data["Date"],
             }
         else:
             data = {

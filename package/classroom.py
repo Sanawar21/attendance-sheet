@@ -167,7 +167,8 @@ class ClassroomClient(BaseClient):
         #     'Course ID': 'adsfadfadsf',
         #     'First name': 'Sanawar',
         #     'Last name': 'Saeed',
-        #     'Course': 'Course 1'
+        #     'Course': 'Course 1',
+        #     'Date': '2024-05-4T23:26:18+05:00Z'
         # }
 
         absentees = []
@@ -184,7 +185,18 @@ class ClassroomClient(BaseClient):
         courses = json.load(open(self.courses_path))
 
         for course_id, attendees_info in course_attendees.items():
-            course_students = students[course_id]
+            if not course_id:
+                continue
+
+            try:
+                course_students = students[course_id]
+            except KeyError:
+                print(
+                    f"No students list found in database linked with {course_id}")
+                print(f"Cannot fetch absentees for {course_id}")
+                print(f"Recommended to regenerate the database.")
+                continue
+
             course_attendee_students = [student for student in course_students if any(
                 [attendee_info["Last name"] in student for attendee_info in attendees_info])]
             course_absentee_students = list(
@@ -203,7 +215,7 @@ class ClassroomClient(BaseClient):
                         flag = True
                     last_name += chr
                 else:
-                    last_name = absentee_name.split(" ")[0]
+                    last_name = absentee_name.split(" ")[-1]
 
                 first_name = absentee_name[:absentee_name.index(
                     last_name)].strip()
@@ -213,6 +225,10 @@ class ClassroomClient(BaseClient):
                     "Last name": last_name,
                     "Course ID": course_id,
                     "Course": courses[course_id]["description"],
+                    "Date": attendees_info[0]["Date"],
                 })
+
+            print(
+                f'Collected absentees for {courses[course_id]["meet_link"].split("/")[-1]}')
 
         return absentees

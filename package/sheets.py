@@ -23,12 +23,17 @@ class SheetsClient(BaseClient):
         )
 
     def get_spreadsheet(self, spreadsheetId, range_="Attendees"):
-        return list(
-            (self
-             .service
-             .spreadsheets()
-             .values()
-             .get(spreadsheetId=spreadsheetId, range=range_)
-             .execute()
-             )
-            .get("values"))
+        while True:
+            try:
+                return list(
+                    (self
+                     .service
+                     .spreadsheets()
+                     .values()
+                     .get(spreadsheetId=spreadsheetId, range=range_)
+                     .execute()
+                     )
+                    .get("values"))
+
+            except TimeoutError:
+                print("Google spreadsheets' read operation timed out, trying again.")
