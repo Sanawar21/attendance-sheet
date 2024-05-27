@@ -83,7 +83,7 @@ class GmailClient:
             sender="meetings-noreply@google.com",
             # TODO: Change this
             # unread=True,
-            newer_than=(1, "Day"),
+            newer_than=(3, "Day"),
             # newer_than=(1, "Month"),
         )
 
@@ -104,9 +104,12 @@ class GmailClient:
         gmail_messages = self._gmail.get_messages(query=self._query)
 
         for message in gmail_messages:
-
-            link = message.html.split('href="')[1].split('"')[0]
             meeting_code = message.subject.split("'")[1]
+            try:
+                link = message.html.split('href="')[1].split('"')[0]
+            except IndexError:
+                print(f"No attendance sheet for {meeting_code}")
+                continue
             spreadsheetId = link.split("/")[5]
             data = self.sheets.get_spreadsheet(spreadsheetId)
 
