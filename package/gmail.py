@@ -123,10 +123,11 @@ class GmailClient:
                 dict_["Code"] = meeting_code
 
                 for course in courses:
-                    if meeting_code in course["meet_link"]:
-                        dict_["Course"] = course["description"]
-                        dict_["Course ID"] = course["id"]
-                        break
+                    if course["meet_link"]:
+                        if meeting_code in course["meet_link"]:
+                            dict_["Course"] = course["description"]
+                            dict_["Course ID"] = course["id"]
+                            break
                 else:
                     dict_["Course"] = None
                     dict_["Course ID"] = None
