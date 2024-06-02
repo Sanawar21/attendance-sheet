@@ -56,6 +56,30 @@ if __name__ == "__main__":
     print("Getting absentees...")
     absentees = cc.get_absentees(attendees)
 
+    missing_courses = []
+
+    for attendee in attendees:
+        if attendee["Course"] == None:
+            course_code = ""
+            try:
+                name_code = "-".join([x for x in attendee["Last name"][::-1].split("-")
+                                      if x[0] not in "abcdefghijklmnopqrstuvwxyz "])[::-1].strip()
+                attrs = name_code.split("-")
+                attrs.pop(3)
+                course_code = "-".join(attrs)
+            except IndexError:
+                pass
+            if not course_code:
+                course_code = None
+            missing_courses.append(course_code)
+            attendee["Course"] = course_code
+
+    print(f"Missing courses: {list(set(missing_courses))}")
+    print("This may be due to these courses being older than or newer than the database\ngeneration period. ")
+    print("Auto setting them to course code extracted from attendee names.")
+
+    print()
+
     print("Uploading to salesforce...")
 
     for attendee in attendees:
