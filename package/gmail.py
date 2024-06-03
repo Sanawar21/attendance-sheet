@@ -83,7 +83,7 @@ class GmailClient:
             sender="meetings-noreply@google.com",
             # TODO: Change this
             # unread=True,
-            newer_than=(3, "Day"),
+            newer_than=(1, "Day"),
             # newer_than=(1, "Month"),
         )
 
