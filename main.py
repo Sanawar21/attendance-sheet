@@ -41,9 +41,6 @@ if __name__ == "__main__":
     regen_db = input("Do you wish to regenerate the students and courses database? (Not recommended; takes a lot of time; irreversible; cannot stop before completion) (y/n) ").lower() == "y"
 
     if regen_db:
-        cc.classes_start_date = input(
-            "Enter the minimum creation date of the database: (dd/mm/yyyy) "
-        )
 
         if input("Do you wish to continue? (y/n)").lower() == "y":
             print("Generating the database...")

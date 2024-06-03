@@ -53,16 +53,13 @@ class Course:
 class ClassroomClient(BaseClient):
     def __init__(
             self,
-            classes_start_date="01/04/2024",
+            metadata_path="data/metadata.json",
             client_secret_path="data/secret.json",
             credentials_path="data/credentials.json",
             courses_path="data/courses.json",
             students_path="data/students.json",
             force_renew=False
     ) -> None:
-        """
-        classes_start_date format: dd/mm/yyyy e.g "01/04/2024"
-        """
         super().__init__(
             "classroom",
             "v1",
@@ -75,12 +72,32 @@ class ClassroomClient(BaseClient):
             ],
             force_renew
         )
-        self.classes_start_date = classes_start_date
+        self.metadata = json.load(open(metadata_path))
+        self.metadata_path = metadata_path
+        self.last_updated = self.metadata["databaseLastUpdated"]
+        self.data_from = self.metadata["dataFrom"]
+        self.data_till = self.metadata["dataTill"]
         self.students_path = students_path
+
+    def __get_todays_date(self):
+        # Get today's date
+        today = datetime.today()
+        # Format the date in 'dd/mm/yyyy'
+        formatted_date = today.strftime('%d/%m/%Y')
+        return formatted_date
+
+    def __save_metadata(self):
+        self.metadata = {
+            "databaseLastUpdated": self.last_updated,
+            "dataFrom": self.data_from,
+            "dataTill": self.data_till,
+        }
+        with open(self.metadata_path, "w") as file:
+            file.write(json.dumps(self.metadata))
 
     def is_since_start_date(self, date: str) -> bool:
         from_date = datetime.strptime(
-            self.classes_start_date, "%d/%m/%Y").replace(tzinfo=timezone.utc)
+            self.data_till, "%d/%m/%Y").replace(tzinfo=timezone.utc)
         iso_date = datetime.fromisoformat(date.replace(
             'Z', '+00:00')).replace(tzinfo=timezone.utc)
 
@@ -148,6 +165,9 @@ class ClassroomClient(BaseClient):
         for course in courses:
             students = self.get_students(course.id)
             self.save(students)
+        self.last_updated = self.__get_todays_date()
+        self.data_till = self.__get_todays_date()
+        self.__save_metadata()
 
     def get_absentees(self, attendees):
         # attendee {
