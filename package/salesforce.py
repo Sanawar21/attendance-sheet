@@ -6,7 +6,7 @@ class AttendanceClient(SFType):
     def __init__(self, username, password, security_token):
         session_id, instance = SalesforceLogin(
             username=username,
-            domain="test",
+            domain="login",
             password=password,
             security_token=security_token
         )

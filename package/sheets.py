@@ -1,4 +1,5 @@
 from .client import BaseClient
+from googleapiclient.errors import HttpError
 
 
 class SheetsClient(BaseClient):
@@ -35,5 +36,5 @@ class SheetsClient(BaseClient):
                      )
                     .get("values"))
 
-            except TimeoutError:
+            except (TimeoutError, HttpError):
                 print("Google spreadsheets' read operation timed out, trying again.")
