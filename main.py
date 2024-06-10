@@ -86,7 +86,7 @@ if __name__ == "__main__":
         )
 
     for absentee in absentees:
-        ac.upload(absentee, is_absentee=True)
+        ac.upload(absentee)
         print(
             f'Uploaded absence for {absentee["Last name"]} (Course: {absentee["Course"]})'
         )
