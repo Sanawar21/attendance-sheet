@@ -82,8 +82,10 @@ class GmailClient:
             exact_phrase="meeting data from",
             sender="meetings-noreply@google.com",
             # TODO: Change this
-            # unread=True,
-            newer_than=(3, "Day"),
+            # after="2024/06/06",
+            # before="2024/06/14"
+            unread=True,
+            newer_than=(1, "Day"),
             # newer_than=(1, "Month"),
         )
 
