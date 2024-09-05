@@ -1,6 +1,8 @@
 from .client import BaseClient
 from googleapiclient.errors import HttpError
 
+import time
+
 
 class SheetsClient(BaseClient):
 
@@ -18,23 +20,37 @@ class SheetsClient(BaseClient):
             credentials_path,
             courses_path,
             [
-                "https://www.googleapis.com/auth/spreadsheets.readonly"
+                "https://www.googleapis.com/auth/spreadsheets"
             ],
             force_renew
         )
 
     def get_spreadsheet(self, spreadsheetId, range_="Attendees"):
-        while True:
+        spreadsheet = {}
+        for _ in range(5):
             try:
-                return list(
+                time.sleep(1)
+
+                spreadsheet["data"] = list(
                     (self
-                     .service
-                     .spreadsheets()
-                     .values()
-                     .get(spreadsheetId=spreadsheetId, range=range_)
-                     .execute()
+                        .service
+                        .spreadsheets()
+                        .values()
+                        .get(spreadsheetId=spreadsheetId, range=range_)
+                        .execute()
                      )
                     .get("values"))
 
+                data = (self
+                        .service
+                        .spreadsheets()
+                        .get(spreadsheetId=spreadsheetId)
+                        .execute()
+                        )
+                spreadsheet["title"] = data.get("properties").get("title")
+                return spreadsheet
+
             except (TimeoutError, HttpError):
                 print("Google spreadsheets' read operation timed out, trying again.")
+
+        return None

@@ -79,12 +79,12 @@ class GmailClient:
         self._gmail = Gmail(
             client_secret_file=self.credentials_path, creds_file=self.credentials_path)
         self._query = construct_query(
-            exact_phrase="meeting data from",
+            exact_phrase="Meeting records from",
             sender="meetings-noreply@google.com",
             # TODO: Change this
             # after="2024/06/06",
             # before="2024/06/14"
-            unread=True,
+            unread=False,
             newer_than=(1, "Day"),
             # newer_than=(1, "Month"),
         )
@@ -106,15 +106,21 @@ class GmailClient:
         gmail_messages = self._gmail.get_messages(query=self._query)
 
         for message in gmail_messages:
-            meeting_code = message.subject.split("'")[1]
             try:
-                link = message.html.split('href="')[1].split('"')[0]
+                half_link = "https://docs.google.com/spreadsheets/d"
+                link = half_link + \
+                    message.html.split(half_link)[1].split("\"")[0]
             except IndexError:
-                print(f"No attendance sheet for {meeting_code}")
+                print(f"No attendance sheet found. Skipping message.")
                 continue
             spreadsheetId = link.split("/")[5]
             data = self.sheets.get_spreadsheet(spreadsheetId)
-
+            if not data:
+                print(
+                    f"Failed to get data from {spreadsheetId}. Skipping message.")
+                continue
+            meeting_code = data["title"].split(" ")[2]
+            data = data["data"]
             headers = data.pop(0)
             date = self.format_date(message.date)
 

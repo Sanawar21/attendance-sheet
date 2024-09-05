@@ -1,5 +1,6 @@
 import json
 import pytz
+import os
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -24,6 +25,8 @@ class BaseClient:
         self.scopes = scopes
         self.service_name = service_name
         self.build_version = build_version
+
+        os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 
         # check if credentials.json is available
         try:
