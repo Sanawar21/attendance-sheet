@@ -126,7 +126,7 @@ class GmailClient:
             date = self.format_date(message.date)
 
             for attendee in data:
-                if attendee:
+                if len(attendee) == 6:
                     dict_ = {header: attendee[index]
                              for index, header in enumerate(headers)}
                     dict_["Date"] = date
@@ -144,7 +144,7 @@ class GmailClient:
 
                     messages.append(dict_)
                 else:
-                    print("Attendee has no attributes.")
+                    print("Invalid attendee attributes.")
 
             print(f"Collected attendees for {meeting_code}")
             message.mark_as_read()
