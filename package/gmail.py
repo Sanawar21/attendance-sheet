@@ -84,7 +84,8 @@ class GmailClient:
             # TODO: Change this
             # after="2024/06/06",
             # before="2024/06/14"
-            unread=False,
+            # unread=False,
+            # read=True,
             newer_than=(1, "Day"),
             # newer_than=(1, "Month"),
         )
@@ -125,22 +126,25 @@ class GmailClient:
             date = self.format_date(message.date)
 
             for attendee in data:
-                dict_ = {header: attendee[index]
-                         for index, header in enumerate(headers)}
-                dict_["Date"] = date
-                dict_["Code"] = meeting_code
+                if attendee:
+                    dict_ = {header: attendee[index]
+                             for index, header in enumerate(headers)}
+                    dict_["Date"] = date
+                    dict_["Code"] = meeting_code
 
-                for course in courses:
-                    if course["meet_link"]:
-                        if meeting_code in course["meet_link"]:
-                            dict_["Course"] = course["description"]
-                            dict_["Course ID"] = course["id"]
-                            break
+                    for course in courses:
+                        if course["meet_link"]:
+                            if meeting_code in course["meet_link"]:
+                                dict_["Course"] = course["description"]
+                                dict_["Course ID"] = course["id"]
+                                break
+                    else:
+                        dict_["Course"] = None
+                        dict_["Course ID"] = None
+
+                    messages.append(dict_)
                 else:
-                    dict_["Course"] = None
-                    dict_["Course ID"] = None
-
-                messages.append(dict_)
+                    print("Attendee has no attributes.")
 
             print(f"Collected attendees for {meeting_code}")
             message.mark_as_read()
