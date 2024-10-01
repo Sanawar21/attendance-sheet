@@ -86,7 +86,14 @@ if __name__ == "__main__":
         )
 
     for absentee in absentees:
-        ac.upload(absentee)
-        print(
-            f'Uploaded absence for {absentee["Last name"]} (Course: {absentee["Course"]})'
-        )
+        # remove duplicates bug
+        # compare course id, first name, last name and date
+
+        for attendee in attendees:
+            if absentee["Course ID"] == attendee["Course ID"] and absentee["First name"] == attendee["First name"] and absentee["Last name"] == attendee["Last name"] and absentee["Date"] == attendee["Date"]:
+                break
+        else:
+            ac.upload(absentee)
+            print(
+                f'Uploaded absence for {absentee["Last name"]} (Course: {absentee["Course"]})'
+            )
