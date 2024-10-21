@@ -85,15 +85,19 @@ if __name__ == "__main__":
             f'Uploaded attendance for {attendee["Last name"]} (Course: {attendee["Course"]})'
         )
 
-    for absentee in absentees:
-        # remove duplicates bug
-        # compare course id, last name and date
+    # Create a set of unique keys for attendees using Course ID, Last name, and Date
+    attendees_set = {
+        (attendee["Course ID"], attendee["Last name"].strip(), attendee["Date"])
+        for attendee in attendees
+    }
 
-        for attendee in attendees:
-            if absentee["Course ID"] == attendee["Course ID"] and absentee["Last name"] == attendee["Last name"] and absentee["Date"] == attendee["Date"]:
-                break
-        else:
+    for absentee in absentees:
+        # Create a key for each absentee
+        absentee_key = (absentee["Course ID"],
+                        absentee["Last name"].strip(), absentee["Date"])
+
+        # Check if this absentee is not in the attendees set
+        if absentee_key not in attendees_set:
             ac.upload(absentee)
             print(
-                f'Uploaded absence for {absentee["Last name"]} (Course: {absentee["Course"]})'
-            )
+                f'Uploaded absence for {absentee["Last name"]} (Course: {absentee["Course"]})')
